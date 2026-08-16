@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quack — Connexion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #111827;
+            --bg-sidebar: #0F172A;
+            --bg-card: #1F2937;
+            --accent: #FBBF24;
+            --accent-hover: #F59E0B;
+            --secondary: #3B82F6;
+            --danger: #EF4444;
+            --text-main: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --border: #374151;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-sidebar) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        .container { width: 100%; max-width: 420px; }
+
+        .auth-box {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header { text-align: center; margin-bottom: 32px; }
+
+        .logo { font-size: 48px; margin-bottom: 10px; display: inline-block; animation: bounce 0.8s ease-in-out; }
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .title { font-family: 'Quicksand', sans-serif; color: var(--text-main); font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: var(--text-secondary); font-size: 14px; }
+
+        .form { display: none; animation: fadeIn 0.4s ease-out; }
+        .form.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; color: var(--text-main); font-size: 12px; font-weight: 700;
+            margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%; padding: 12px 16px; background: var(--bg-main);
+            border: 2px solid var(--border); border-radius: 10px; color: var(--text-main);
+            font-size: 14px; transition: all 0.2s ease; font-family: inherit;
+        }
+        .form-group input::placeholder { color: var(--text-secondary); }
+        .form-group input:focus {
+            outline: none; border-color: var(--accent); background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+        }
+
+        .password-toggle { position: relative; }
+        .password-toggle button {
+            position: absolute; right: 10px; top: 36px; background: none; border: none;
+            color: var(--text-secondary); cursor: pointer; font-size: 17px;
+            height: 26px; width: 26px; display: flex; align-items: center; justify-content: center;
+        }
+        .password-toggle button:hover { color: var(--accent); }
+
+        .submit-btn {
+            width: 100%; padding: 13px; background: var(--accent); color: #111827;
+            border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;
+            transition: all 0.25s ease; margin-top: 6px;
+        }
+        .submit-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(251, 191, 36, 0.3); }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .error-message, .success-message {
+            padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 18px; display: none; line-height: 1.5;
+        }
+        .error-message { background: rgba(239, 68, 68, 0.12); border: 1px solid var(--danger); color: #FCA5A5; }
+        .success-message { background: rgba(34, 197, 94, 0.12); border: 1px solid #22C55E; color: #86EFAC; }
+        .error-message.show, .success-message.show { display: block; animation: shake 0.4s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+        .toggle-auth { text-align: center; margin-top: 22px; color: var(--text-secondary); font-size: 13px; }
+        .toggle-auth button { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 700; text-decoration: underline; font-size: 13px; }
+        .toggle-auth button:hover { color: var(--accent-hover); }
+
+        .footer { text-align: center; margin-top: 32px; color: #6B7280; font-size: 12px; }
+
+        .emoji-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px;
+            max-height: 148px; overflow-y: auto; padding: 4px;
+        }
+        .emoji-grid::-webkit-scrollbar { width: 6px; }
+        .emoji-grid::-webkit-scrollbar-track { background: var(--bg-main); border-radius: 4px; }
+        .emoji-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .emoji-btn {
+            aspect-ratio: 1; background: var(--bg-main); border: 2px solid var(--border); border-radius: 10px;
+            font-size: 19px; cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center;
+        }
+        .emoji-btn:hover { border-color: var(--accent); transform: scale(1.1); }
+        .emoji-btn.selected { background: var(--accent); border-color: var(--accent); transform: scale(1.12); }
+
+        .emoji-label { color: var(--text-main); font-size: 12px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+
+        .hint { color: var(--text-secondary); font-size: 12px; margin-top: -10px; margin-bottom: 16px; }
+
+        @media (max-width: 480px) {
+            .auth-box { padding: 28px 20px; }
+            .title { font-size: 25px; }
+            .logo { font-size: 40px; }
+            .emoji-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <div class="header">
+                <div class="logo">🦆</div>
+                <h1 class="title">Quack</h1>
+                <p class="subtitle">Ici il n'y a pas de quack</p>
+            </div>
+
+            <form class="form active" id="loginForm">
+                <div class="error-message" id="loginError"></div>
+                <div class="success-message" id="loginSuccess"></div>
+
+                <div class="form-group">
+                    <label for="loginUsername">Identifiant</label>
+                    <input type="text" id="loginUsername" placeholder="Ton identifiant" required autocomplete="username">
+                </div>
+
+                <div class="form-group password-toggle">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" placeholder="Ton mot de passe" required autocomplete="current-password">
+                    <button type="button" class="toggle-pwd" data-target="loginPassword" title="Afficher/Masquer">👁️</button>
+                </div>
+
+                <button type="submit" class="submit-btn" id="loginBtn">Se connecter</button>
+
+                <div class="toggle-auth">
+                    Pas encore de compte ?
+                    <button type="button" data-action="toggle">Créer un compte</button>
+                </div>
+            </form>
+
+            <form class="form" id="registerForm">
+                <div class="error-message" id="registerError"></div>
+                <div class="success-message" id="registerSuccess"></div>
+
+                <div class="form-group">
+                    <label class="emoji-label">Choisir ton emoji</label>
+                    <div class="emoji-grid" id="emojiGrid"></div>
+                    <input type="hidden" id="selectedEmoji" value="🦆">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerUsername">Identifiant</label>
+                    <input type="text" id="registerUsername" placeholder="3 à 20 caractères" required minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_]+$" title="Lettres, chiffres et underscores uniquement">
+                </div>
+
+                <div class="form-group password-toggle">
+                    <label for="registerPassword">Mot de passe</label>
+                    <input type="password" id="registerPassword" placeholder="Au moins 6 caractères" required minlength="6">
+                    <button type="button" class="toggle-pwd" data-target="registerPassword" title="Afficher/Masquer">👁️</button>
+                </div>
+
+                <div class="form-group password-toggle">
+                    <label for="registerPasswordConfirm">Confirmer le mot de passe</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="Confirme ton mot de passe" required minlength="6">
+                    <button type="button" class="toggle-pwd" data-target="registerPasswordConfirm" title="Afficher/Masquer">👁️</button>
+                </div>
+
+                <button type="submit" class="submit-btn" id="registerBtn">Créer un compte</button>
+
+                <div class="toggle-auth">
+                    Déjà inscrit ?
+                    <button type="button" data-action="toggle">Se connecter</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="footer">by @YutaStudio © 2026</div>
+    </div>
+
+    <script>
+        const EMOJIS = ['🥸', '🦆', '🥳', '🤡', '👻', '🐶', '🐽', '🌸', '🥐', '🌎', '🔥', '🏅', '🏆', '⚽️', '🏀', '🏐', '⛔️', '👑', '🗿', '🤨', '💰', '🤪', '😀'];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeEmojis();
+            setupEventListeners();
+            checkBannedParam();
+            checkActiveSession();
+        });
+
+        function checkBannedParam() {
+            const params = new URLSearchParams(window.location.search);
+            const banned = params.get('banned');
+            if (banned) {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = 'Accès refusé. Motif du bannissement : ' + banned;
+                errorDiv.classList.add('show');
+            }
+        }
+
+        async function checkActiveSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return;
+
+            const { data: ban } = await supabaseClient
+                .from('banned_users')
+                .select('reason')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+
+            if (ban) {
+                await supabaseClient.auth.signOut();
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = 'Accès refusé. Motif du bannissement : ' + ban.reason;
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            window.location.href = 'accueil.html';
+        }
+
+        function initializeEmojis() {
+            const grid = document.getElementById('emojiGrid');
+            EMOJIS.forEach(function (emoji) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'emoji-btn';
+                btn.textContent = emoji;
+                if (emoji === '🦆') btn.classList.add('selected');
+
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.emoji-btn').forEach(function (b) { b.classList.remove('selected'); });
+                    btn.classList.add('selected');
+                    document.getElementById('selectedEmoji').value = emoji;
+                });
+                grid.appendChild(btn);
+            });
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.toggle-pwd').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const input = document.getElementById(btn.getAttribute('data-target'));
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.textContent = '🙈';
+                    } else {
+                        input.type = 'password';
+                        btn.textContent = '👁️';
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-action="toggle"]').forEach(function (btn) {
+                btn.addEventListener('click', toggleForm);
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        }
+
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            loginForm.classList.toggle('active');
+            registerForm.classList.toggle('active');
+
+            document.querySelectorAll('.error-message, .success-message').forEach(function (el) {
+                el.classList.remove('show');
+            });
+
+            loginForm.reset();
+            registerForm.reset();
+
+            document.querySelectorAll('.emoji-btn').forEach(function (b) { b.classList.remove('selected'); });
+            const duckBtn = Array.from(document.querySelectorAll('.emoji-btn')).find(function (b) { return b.textContent === '🦆'; });
+            if (duckBtn) duckBtn.classList.add('selected');
+            document.getElementById('selectedEmoji').value = '🦆';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
+            const successDiv = document.getElementById('loginSuccess');
+
+            const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            btn.textContent = 'Connexion en cours...';
+            btn.disabled = true;
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+
+            try {
+                const virtualEmail = username + '@quack.local';
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: virtualEmail,
+                    password: password
+                });
+
+                if (error) {
+                    if (error.message && error.message.toLowerCase().indexOf('email not confirmed') !== -1) {
+                        throw new Error("Configuration Supabase à corriger : désactive \"Confirm email\" dans Authentication > Providers > Email (voir SETUP.md).");
+                    }
+                    throw new Error('Identifiant ou mot de passe incorrect.');
+                }
+
+                const { data: ban } = await supabaseClient
+                    .from('banned_users')
+                    .select('reason')
+                    .eq('user_id', data.user.id)
+                    .maybeSingle();
+
+                if (ban) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error('Accès refusé. Motif du bannissement : ' + ban.reason);
+                }
+
+                successDiv.textContent = 'Connexion réussie ! Redirection...';
+                successDiv.classList.add('show');
+
+                setTimeout(function () {
+                    window.location.href = 'accueil.html';
+                }, 700);
+
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Identifiant ou mot de passe incorrect.';
+                errorDiv.classList.add('show');
+            } finally {
+                btn.textContent = 'Se connecter';
+                btn.disabled = false;
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+
+            const emoji = document.getElementById('selectedEmoji').value;
+            const username = document.getElementById('registerUsername').value.trim().toLowerCase();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+                errorDiv.textContent = "L'identifiant doit faire 3 à 20 caractères (lettres, chiffres, _ uniquement).";
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                errorDiv.textContent = 'Les mots de passe ne correspondent pas.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            btn.textContent = 'Création en cours...';
+            btn.disabled = true;
+
+            try {
+                const { data: existingUser } = await supabaseClient
+                    .from('users')
+                    .select('username')
+                    .eq('username', username)
+                    .maybeSingle();
+
+                if (existingUser) {
+                    throw new Error('Cet identifiant est déjà utilisé.');
+                }
+
+                const virtualEmail = username + '@quack.local';
+                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                    email: virtualEmail,
+                    password: password,
+                    options: {
+                        data: { username: username, emoji: emoji }
+                    }
+                });
+
+                if (authError) throw authError;
+
+                if (authData.session) {
+                    successDiv.textContent = 'Compte créé ! Redirection...';
+                    successDiv.classList.add('show');
+                    setTimeout(function () {
+                        window.location.href = 'accueil.html';
+                    }, 800);
+                } else {
+                    successDiv.textContent = 'Compte créé ! Vérifie ta boîte mail pour confirmer, puis connecte-toi.';
+                    successDiv.classList.add('show');
+                    setTimeout(function () {
+                        toggleForm();
+                        document.getElementById('loginUsername').value = username;
+                    }, 2000);
+                }
+
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Une erreur est survenue.';
+                errorDiv.classList.add('show');
+            } finally {
+                btn.textContent = 'Créer un compte';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
