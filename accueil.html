@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quack — Accueil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #111827;
+            --bg-sidebar: #0F172A;
+            --bg-card: #1F2937;
+            --accent: #FBBF24;
+            --accent-hover: #F59E0B;
+            --secondary: #3B82F6;
+            --danger: #EF4444;
+            --text-main: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --border: #374151;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* ---------- Sidebar (partagée entre les pages connectées) ---------- */
+        .sidebar {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 20px 16px;
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-logo {
+            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 22px; color: var(--accent);
+            display: flex; align-items: center; gap: 8px; padding: 8px 12px 24px;
+        }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow-y: auto; }
+        .nav-link {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px;
+            color: var(--text-secondary); text-decoration: none; background: none; border: none;
+            font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; text-align: left;
+            transition: background 0.2s, color 0.2s; font-family: inherit;
+        }
+        .nav-link:hover { background: rgba(251, 191, 36, 0.08); color: var(--text-main); }
+        .nav-link.active { background: rgba(251, 191, 36, 0.15); color: var(--accent); }
+        .nav-icon { font-size: 18px; }
+        .soon-tag {
+            margin-left: auto; font-size: 9px; background: var(--border); color: var(--text-secondary);
+            padding: 2px 6px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-card); border-radius: 12px; margin-top: 12px; }
+        .sidebar-user-emoji { font-size: 24px; background: var(--bg-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .sidebar-user-info { flex: 1; min-width: 0; }
+        .sidebar-user-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-badge { font-size: 11px; color: var(--text-secondary); }
+        .sidebar-logout { background: none; border: none; color: var(--text-secondary); font-size: 16px; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s, color 0.2s; }
+        .sidebar-logout:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .mobile-toggle {
+            display: none; position: fixed; top: 16px; left: 16px; z-index: 250;
+            background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main);
+            width: 42px; height: 42px; border-radius: 10px; font-size: 18px; cursor: pointer;
+        }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 150; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.show { display: block; opacity: 1; }
+
+        .main-content { margin-left: 260px; min-height: 100vh; padding: 36px 40px; }
+
+        .global-toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-main);
+            padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
+            opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .global-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            .main-content { margin-left: 0; padding: 84px 18px 24px; }
+        }
+
+        /* ---------- Contenu de la page Accueil ---------- */
+        .page-header { margin-bottom: 28px; animation: fadeUp 0.4s ease; }
+        .page-header h1 { font-family: 'Quicksand', sans-serif; font-size: 27px; font-weight: 700; }
+        .page-subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 5px; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;
+        }
+
+        .hub-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 22px; text-align: left; text-decoration: none; color: var(--text-main);
+            cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+            display: flex; flex-direction: column; gap: 10px; position: relative;
+            font-family: inherit; animation: fadeUp 0.5s ease backwards;
+        }
+        .hub-card:nth-child(1) { animation-delay: 0.05s; }
+        .hub-card:nth-child(2) { animation-delay: 0.12s; }
+        .hub-card:nth-child(3) { animation-delay: 0.19s; }
+
+        .hub-card--active:hover { transform: translateY(-4px); border-color: var(--accent); }
+        .hub-card--soon { opacity: 0.55; }
+        .hub-card--soon:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .hub-card-icon {
+            width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center;
+            justify-content: center; font-size: 24px; background: rgba(251, 191, 36, 0.12);
+        }
+        .hub-card-title { font-weight: 700; font-size: 17px; }
+        .hub-card-desc { color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+        .hub-card-stat { color: var(--accent); font-size: 12px; font-weight: 700; margin-top: 2px; min-height: 16px; }
+
+        .hub-card .card-soon-tag {
+            position: absolute; top: 16px; right: 16px; font-size: 9px; background: var(--border);
+            color: var(--text-secondary); padding: 3px 8px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-root"></div>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 id="greeting">Salut !</h1>
+            <p class="page-subtitle">Où veux-tu aller ?</p>
+        </div>
+
+        <div class="cards-grid">
+            <a href="chat-mondial.html" class="hub-card hub-card--active">
+                <div class="hub-card-icon" style="background: rgba(59,130,246,0.15); color:#60A5FA;">🌎</div>
+                <div class="hub-card-title">Chat mondial</div>
+                <div class="hub-card-desc">Rejoins la discussion publique avec toute la communauté Quack.</div>
+                <div class="hub-card-stat" id="globalMsgCount">Chargement…</div>
+            </a>
+
+            <a href="messages-prives.html" class="hub-card hub-card--active">
+                <div class="hub-card-icon" style="background: rgba(139,92,246,0.15); color:#A78BFA;">💬</div>
+                <div class="hub-card-title">Messages privés</div>
+                <div class="hub-card-desc">Discute en tête-à-tête avec les autres membres.</div>
+                <div class="hub-card-stat" id="dmCount">Chargement…</div>
+            </a>
+
+            <a href="groupes.html" class="hub-card hub-card--active">
+                <div class="hub-card-icon" style="background: rgba(34,197,94,0.15); color:#4ADE80;">👥</div>
+                <div class="hub-card-title">Groupes</div>
+                <div class="hub-card-desc">Crée et rejoins des groupes de discussion.</div>
+                <div class="hub-card-stat" id="groupCount">Chargement…</div>
+            </a>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app-shared.js"></script>
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            currentUser = await requireAuth();
+            if (!currentUser) return;
+
+            renderSidebar('accueil', currentUser);
+
+            document.getElementById('greeting').textContent = 'Salut ' + currentUser.emoji + ' ' + currentUser.display_name + ' !';
+
+            document.querySelectorAll('.hub-card--soon').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    showToast(btn.dataset.soon + ' arrive bientôt 🦆');
+                });
+            });
+
+            loadStats();
+        });
+
+        async function loadStats() {
+            const { count: msgCount } = await supabaseClient
+                .from('global_messages')
+                .select('*', { count: 'exact', head: true });
+
+            const globalEl = document.getElementById('globalMsgCount');
+            const total = msgCount || 0;
+            globalEl.textContent = total === 0
+                ? 'Sois le premier à quacker 🦆'
+                : '💬 ' + total + ' message' + (total > 1 ? 's' : '') + ' échangé' + (total > 1 ? 's' : '');
+
+            const { data: conversations } = await supabaseClient
+                .from('my_private_conversations')
+                .select('conversation_id');
+
+            const dmEl = document.getElementById('dmCount');
+            const dmTotal = (conversations || []).length;
+            dmEl.textContent = dmTotal === 0 ? 'Aucune conversation pour l\'instant' : dmTotal + ' conversation' + (dmTotal > 1 ? 's' : '');
+
+            const { count: groupCount } = await supabaseClient
+                .from('group_members')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', currentUser.id);
+
+            const groupEl = document.getElementById('groupCount');
+            const gTotal = groupCount || 0;
+            groupEl.textContent = gTotal === 0 ? 'Aucun groupe pour l\'instant' : gTotal + ' groupe' + (gTotal > 1 ? 's' : '');
+        }
+    </script>
+</body>
+</html>
